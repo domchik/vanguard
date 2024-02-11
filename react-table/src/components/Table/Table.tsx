@@ -1,4 +1,4 @@
-import { MouseEvent } from 'react'
+import { FormEvent, MouseEvent, useState } from 'react'
 import Box from '@mui/material/Box'
 import MuiTable from '@mui/material/Table'
 import TableBody from '@mui/material/TableBody'
@@ -10,40 +10,70 @@ import Checkbox from '@mui/material/Checkbox'
 import TableHead from './TableHead'
 import TableToolbar from './TableToolbar'
 import { Row } from '../../db/model'
+import { Button } from '@mui/material'
 
-const Table = ({ rows }: { rows: Row[] }) => {
-  const handleRequestSort = (event: MouseEvent, property: string) => {
-    console.log('property?', property)
+const Table = ({ rows, performSort, performDelete }: {
+  rows: Row[]
+  performSort: (columnName: keyof Row) => void,
+  performDelete: (rows: Row[]) => void
+}) => {
+
+  const [selectedRows, setSelectedRows] = useState([] as Row[]);
+  const handleRequestSort = (_event: MouseEvent, property: string) => {
+    performSort(property as keyof Row)
   }
-
-  const handleSelectAllClick = () => {}
+  const handleSelectAllClick = (e: any) => {
+      if (e.target.checked) {
+        setSelectedRows(rows);
+      } else {
+        setSelectedRows([]);
+      }
+  }
 
   const handleClick = (event: MouseEvent, name: string) => {
     console.log('event', event, 'name', name)
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const isSelected = (name: string) => false
+  const handleChkChange = (event: FormEvent<HTMLInputElement>, row: Row) => {
+    setSelectedRows((prevSelected: Row[]) => {
+      const isSelected = prevSelected.some((r) => r.id === row.id);
+
+      return isSelected
+        ? prevSelected.filter((r) => r.id !== row.id)
+        : [...prevSelected, row];
+    });
+  };
+
+
+  const handleDeleteSelected = () => {
+    const deletedRows = selectedRows.filter((r) => {
+      return rows.find((row) => row.id === r.id)
+    })
+    performDelete(deletedRows)
+    setSelectedRows([])
+  }
+
+  const isSelected = (row: Row) => {
+    return selectedRows.some((r) => {
+      return r.id === row.id
+    })
+  }
 
   return (
     <Box sx={{ width: '100%' }}>
       <Paper sx={{ width: '100%', mb: 2 }}>
         <TableToolbar numSelected={0} />
-
         <TableContainer>
           <MuiTable>
             <TableHead
-              numSelected={0}
-              // order={order}
-              // orderBy={orderBy}
+              numSelected={selectedRows.length}
               onSelectAllClick={handleSelectAllClick}
               onRequestSort={handleRequestSort}
               rowCount={rows.length}
             />
             <TableBody>
               {rows.map((row) => {
-                const isItemSelected = isSelected(row.name)
-
+                const isItemSelected = isSelected(row)
                 return (
                   <TableRow
                     hover
@@ -56,7 +86,7 @@ const Table = ({ rows }: { rows: Row[] }) => {
                     selected={isItemSelected}
                   >
                     <TableCell padding="checkbox">
-                      <Checkbox color="primary" />
+                      <Checkbox color="primary"  checked={isItemSelected} onChange={(event) =>  handleChkChange(event,row)} />
                     </TableCell>
                     <TableCell component="th" scope="row" padding="none">
                       {row.name}
@@ -70,6 +100,8 @@ const Table = ({ rows }: { rows: Row[] }) => {
           </MuiTable>
         </TableContainer>
       </Paper>
+      <Button variant="contained" disabled={selectedRows.length === 0} onClick={handleDeleteSelected}>Delete selected
+        rows</Button>
     </Box>
   )
 }

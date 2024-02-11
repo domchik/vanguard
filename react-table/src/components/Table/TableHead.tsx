@@ -9,34 +9,35 @@ import { visuallyHidden } from '@mui/utils'
 import { cells } from './cells'
 
 const TableHead = ({
-  order = 'asc',
-  orderBy = 'name',
-  onRequestSort,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onSelectAllClick,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  rowCount,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  numSelected,
-}: {
+                     order = 'asc',
+                     orderBy = 'name',
+                     onRequestSort,
+                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                     onSelectAllClick,
+                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                     rowCount,
+                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                     numSelected,
+                   }: {
   order?: 'asc' | 'desc'
   orderBy?: string
   onRequestSort: (event: MouseEvent, property: string) => void
   rowCount: number
   numSelected: number
-  onSelectAllClick: () => void
+  onSelectAllClick: (e: any) => void
 }) => {
   const createSortHandler =
     (property: string): MouseEventHandler<HTMLButtonElement> =>
-    (event) => {
-      onRequestSort(event, property)
-    }
+      (event) => {
+        onRequestSort(event, property)
+      }
+
 
   return (
     <MuiTableHead>
       <TableRow>
         <TableCell padding="checkbox">
-          <Checkbox color="primary" />
+          <Checkbox color="primary" checked={numSelected === rowCount && rowCount > 0} onClick={onSelectAllClick} />
         </TableCell>
 
         {cells.map((headCell) => (
@@ -64,5 +65,4 @@ const TableHead = ({
     </MuiTableHead>
   )
 }
-
 export default TableHead
