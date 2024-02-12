@@ -9,18 +9,25 @@ import Paper from '@mui/material/Paper'
 import Checkbox from '@mui/material/Checkbox'
 import TableHead from './TableHead'
 import TableToolbar from './TableToolbar'
-import { Row } from '../../db/model'
+import { Row, OrderDirection, OrderByColumn } from '../../db/model'
 import { Button } from '@mui/material'
 
 const Table = ({ rows, performSort, performDelete }: {
   rows: Row[]
   performSort: (columnName: keyof Row) => void,
-  performDelete: (rows: Row[]) => void
+  performDelete: (rows: Row[]) => void,
+
 }) => {
 
   const [selectedRows, setSelectedRows] = useState([] as Row[]);
+  const [orderDirection, setOrderDirection] = useState<OrderDirection>('asc');
+  const [orderByColumn, setOrderByColumn] = useState<OrderByColumn>('name');
+
   const handleRequestSort = (_event: MouseEvent, property: string) => {
     performSort(property as keyof Row)
+    const isAsc = orderByColumn === property && orderDirection === 'asc';
+    setOrderDirection(isAsc ? 'desc' : 'asc');
+    setOrderByColumn(property as OrderByColumn);
   }
   const handleSelectAllClick = (e: any) => {
       if (e.target.checked) {
@@ -70,6 +77,8 @@ const Table = ({ rows, performSort, performDelete }: {
               onSelectAllClick={handleSelectAllClick}
               onRequestSort={handleRequestSort}
               rowCount={rows.length}
+              order={orderDirection}
+              orderBy={orderByColumn}
             />
             <TableBody>
               {rows.map((row) => {
